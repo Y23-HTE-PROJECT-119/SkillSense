@@ -19,6 +19,7 @@ class Base(DeclarativeBase):
 
 def create_tables() -> None:
     from app.db.models.skill import Skill
+    from app.db.models.topic import Topic
 
     Base.metadata.create_all(bind=engine)
 
