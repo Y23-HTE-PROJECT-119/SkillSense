@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from app.db.database import create_tables
 
 from app.routes.skills import router as skills_router
+from app.routes.topics import router as topics_router
 
 app = FastAPI(
     title="AI Skill Assessment Platform",
@@ -15,6 +16,7 @@ def startup() -> None:
     create_tables()
 
 app.include_router(skills_router)
+app.include_router(topics_router)
 
 @app.get("/")
 def root():
