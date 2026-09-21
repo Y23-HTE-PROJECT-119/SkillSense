@@ -3,16 +3,16 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
 
-class Topic(Base):
-    __tablename__="topics"
+class SubTopic(Base):
+    __tablename__="subtopics"
 
     id: Mapped[int] = mapped_column(
         primary_key = True, 
         autoincrement = True,
     )
 
-    skill_id : Mapped[int] = mapped_column(
-        ForeignKey("skills.id"),
+    topic_id : Mapped[int] = mapped_column(
+        ForeignKey("topics.id"),
         nullable = False,
     )
 
@@ -26,11 +26,7 @@ class Topic(Base):
         nullable = True,
     )
 
-    skill : Mapped["Skill"] = relationship(
-        back_populates = "topics",
-    )
-
-    subtopics : Mapped[list["SubTopic"]] = relationship(
-        back_populates = "topic",
+    topic : Mapped["Topic"] = relationship(
+        back_populates = "subtopics",
     )
 
