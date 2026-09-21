@@ -1,30 +1,39 @@
-import SkillCard from "../components/SkillCard";
+import { useEffect, useState } from "react";
 
-const skills = [
-  {
-    id: 1,
-    name: "Python Basics",
-    description: "Learn the fundamentals of Python programming.",
-    level: "Beginner",
-    progress: 65,
-  },
-  {
-    id: 2,
-    name: "Machine Learning",
-    description: "Understand the foundations of machine learning.",
-    level: "Beginner",
-    progress: 35,
-  },
-  {
-    id: 3,
-    name: "Communication Skills",
-    description: "Improve professional communication and presentation.",
-    level: "Intermediate",
-    progress: 50,
-  },
-];
+import SkillCard from "../components/SkillCard";
+import { getSkills } from "../services/api";
+
 
 function Dashboard() {
+  const [skills, setSkills] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+
+  useEffect(() => {
+    async function loadSkills() {
+      try {
+        setLoading(true);
+        setError("");
+
+        const data = await getSkills();
+
+        setSkills(data);
+      } catch (error) {
+        console.error("Failed to load skills:", error);
+
+        setError(
+          "Unable to load skills. Please make sure the backend is running.",
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadSkills();
+  }, []);
+
+
   return (
     <main className="dashboard">
       <section className="welcome-section">
@@ -37,36 +46,47 @@ function Dashboard() {
         </p>
       </section>
 
+
       <section className="stats-grid">
         <div className="stat-card">
           <span className="stat-label">Skills</span>
-          <strong>3</strong>
+
+          <strong>{skills.length}</strong>
+
           <span className="stat-description">
-            Currently learning
+            Currently available
           </span>
         </div>
 
+
         <div className="stat-card">
           <span className="stat-label">Assessments</span>
+
           <strong>0</strong>
+
           <span className="stat-description">
             Completed
           </span>
         </div>
 
+
         <div className="stat-card">
           <span className="stat-label">Overall Progress</span>
-          <strong>50%</strong>
+
+          <strong>—</strong>
+
           <span className="stat-description">
-            Across all skills
+            No assessments yet
           </span>
         </div>
       </section>
+
 
       <section className="skills-section">
         <div className="section-heading">
           <div>
             <p className="eyebrow">YOUR LEARNING</p>
+
             <h2>Your Skills</h2>
           </div>
 
@@ -75,17 +95,38 @@ function Dashboard() {
           </button>
         </div>
 
-        <div className="skills-grid">
-          {skills.map((skill) => (
-            <SkillCard
-              key={skill.id}
-              skill={skill}
-            />
-          ))}
-        </div>
+
+        {loading && (
+          <p>Loading skills...</p>
+        )}
+
+
+        {!loading && error && (
+          <p>{error}</p>
+        )}
+
+
+        {!loading && !error && skills.length === 0 && (
+          <p>
+            No skills are available yet.
+          </p>
+        )}
+
+
+        {!loading && !error && skills.length > 0 && (
+          <div className="skills-grid">
+            {skills.map((skill) => (
+              <SkillCard
+                key={skill.id}
+                skill={skill}
+              />
+            ))}
+          </div>
+        )}
       </section>
     </main>
   );
 }
+
 
 export default Dashboard;

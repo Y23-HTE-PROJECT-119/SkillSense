@@ -3,37 +3,45 @@ function SkillCard({ skill }) {
     <article className="skill-card">
       <div className="skill-card-top">
         <div className="skill-icon">
-          {skill.name.charAt(0)}
+          {skill.name.charAt(0).toUpperCase()}
         </div>
 
         <span className="skill-level">
-          {skill.level}
+          Not assessed
         </span>
       </div>
 
+
       <h3>{skill.name}</h3>
 
-      <p>{skill.description}</p>
+
+      <p>
+        {skill.description || "No description available."}
+      </p>
+
 
       <div className="skill-progress">
         <div className="progress-header">
-          <span>Progress</span>
-          <span>{skill.progress}%</span>
+          <span>Assessment</span>
+
+          <span>Not started</span>
         </div>
 
         <div className="progress-track">
           <div
             className="progress-bar"
-            style={{ width: `${skill.progress}%` }}
+            style={{ width: "0%" }}
           />
         </div>
       </div>
 
+
       <button className="skill-button">
-        View Skill →
+        Start Learning →
       </button>
     </article>
   );
 }
+
 
 export default SkillCard;
