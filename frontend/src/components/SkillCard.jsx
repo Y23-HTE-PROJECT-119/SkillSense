@@ -1,3 +1,6 @@
+import { Link } from "react-router-dom";
+
+
 function SkillCard({ skill }) {
   return (
     <article className="skill-card">
@@ -36,9 +39,12 @@ function SkillCard({ skill }) {
       </div>
 
 
-      <button className="skill-button">
+      <Link
+        to={`/skills/${skill.id}`}
+        className="skill-button"
+      >
         Start Learning →
-      </button>
+      </Link>
     </article>
   );
 }

@@ -1,18 +1,53 @@
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+} from "react-router-dom";
+
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
+
 import Dashboard from "./pages/Dashboard";
+import SkillDetails from "./pages/SkillDetails";
+import Assessment from "./pages/Assessment";
+import AssessmentResults from "./pages/AssessmentResults";
+import SkillGapAnalysis from "./pages/SkillGapAnalysis";
 
 function App() {
   return (
-    <div className="app">
-      <Navbar />
+    <BrowserRouter>
+      <div className="app">
+        <Navbar />
 
-      <div className="app-body">
-        <Sidebar />
+        <div className="app-body">
+          <Sidebar />
 
-        <Dashboard />
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+
+            <Route
+              path="/skills/:skillId"
+              element={<SkillDetails />}
+            />
+
+            <Route
+              path="/skills/:skillId/assessment"
+              element={<Assessment />}
+            />
+
+            <Route
+              path="/assessment-results"
+              element={<AssessmentResults />}
+            />
+
+            <Route
+              path="/skills/:skillId/gaps"
+              element={<SkillGapAnalysis />}
+            />
+          </Routes>
+        </div>
       </div>
-    </div>
+    </BrowserRouter>
   );
 }
 
