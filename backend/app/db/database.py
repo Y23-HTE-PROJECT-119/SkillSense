@@ -21,7 +21,8 @@ def create_tables() -> None:
     from app.db.models.skill import Skill
     from app.db.models.topic import Topic
     from app.db.models.subtopic import SubTopic
-
+    from app.db.models.learning_material import LearningMaterial
+    
     Base.metadata.create_all(bind=engine)
 
 def get_db():
