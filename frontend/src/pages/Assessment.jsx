@@ -393,14 +393,24 @@ function Assessment() {
             answers[question.id],
         }));
 
-      await submitAssessment(
-        assessment.id,
-        formattedAnswers,
-      );
+      // await submitAssessment(
+      //   assessment.id,
+      //   formattedAnswers,
+      // );
 
-      navigate(
-        `/assessments/${assessment.id}/results`,
-      );
+      // navigate(
+      //   `/assessments/${assessment.id}/results`,
+      // );
+
+      const result = await submitAssessment(
+      assessment.id,
+      formattedAnswers,
+    );
+
+    navigate(`/assessments/${assessment.id}/results`, {
+      state: result,
+    });
+
     } catch (error) {
       console.error(
         "Failed to submit assessment:",

@@ -1,13 +1,20 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 
 function AssessmentResults() {
   const location = useLocation();
+  const { assessmentId } = useParams();
+
   const result = location.state;
 
   if (!result) {
     return (
       <main className="dashboard">
         <h1>No assessment result found</h1>
+
+        <p>
+          The assessment result is not available. Please take the
+          assessment again.
+        </p>
 
         <Link to="/" className="back-link">
           ← Back to Dashboard
@@ -16,9 +23,20 @@ function AssessmentResults() {
     );
   }
 
-  const score = Math.round(
-    (result.correctAnswers / result.totalQuestions) * 100,
+  const percentage = Math.round(
+    result.percentage ??
+      (result.max_score > 0
+        ? (result.total_score / result.max_score) * 100
+        : 0),
   );
+
+  const correctAnswers = result.details
+    ? result.details.filter((detail) => detail.is_correct).length
+    : result.total_score;
+
+  const totalQuestions = result.details
+    ? result.details.length
+    : result.max_score;
 
   return (
     <main className="dashboard results-page">
@@ -34,13 +52,13 @@ function AssessmentResults() {
 
       <section className="score-card">
         <div className="score-circle">
-          <strong>{score}%</strong>
+          <strong>{percentage}%</strong>
           <span>Score</span>
         </div>
 
         <div className="score-summary">
           <h2>
-            {result.correctAnswers} of {result.totalQuestions} correct
+            {correctAnswers} of {totalQuestions} correct
           </h2>
 
           <p>
@@ -69,8 +87,7 @@ function AssessmentResults() {
           </Link>
 
           <Link
-            to={`/skills/${result.skillId}/gaps`}
-            state={result}
+            to={`/assessments/${assessmentId}/gaps`}
             className="skill-button"
           >
             View Skill Gaps →
