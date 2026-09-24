@@ -1,9 +1,11 @@
+import { Link } from "react-router-dom";
+
 function Navbar() {
   return (
     <header className="navbar">
-      <div className="navbar-brand">
+      <Link to="/" className="navbar-brand" style={{ textDecoration: "none", color: "inherit" }}>
         SkillSense
-      </div>
+      </Link>
 
       <div className="navbar-actions">
         <button className="icon-button" aria-label="Notifications">

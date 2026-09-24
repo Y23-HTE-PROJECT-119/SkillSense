@@ -1,33 +1,45 @@
+import { NavLink } from "react-router-dom";
+
 function Sidebar() {
   return (
     <aside className="sidebar">
       <nav className="sidebar-nav">
-        <a href="#" className="sidebar-link active">
+        <NavLink
+          to="/"
+          className={({ isActive }) =>
+            `sidebar-link ${isActive ? "active" : ""}`
+          }
+        >
           <span>⌂</span>
           Dashboard
-        </a>
+        </NavLink>
 
-        <a href="#" className="sidebar-link">
+        <NavLink
+          to="/"
+          className={({ isActive }) =>
+            `sidebar-link ${isActive ? "active" : ""}`
+          }
+        >
           <span>◈</span>
           My Skills
-        </a>
+        </NavLink>
 
-        <a href="#" className="sidebar-link">
+        <NavLink
+          to="/"
+          className={({ isActive }) =>
+            `sidebar-link ${isActive ? "active" : ""}`
+          }
+        >
           <span>✓</span>
           Assessments
-        </a>
-
-        <a href="#" className="sidebar-link">
-          <span>◔</span>
-          Progress
-        </a>
+        </NavLink>
       </nav>
 
       <div className="sidebar-bottom">
-        <a href="#" className="sidebar-link">
+        <NavLink to="/" className="sidebar-link">
           <span>⚙</span>
           Settings
-        </a>
+        </NavLink>
       </div>
     </aside>
   );
