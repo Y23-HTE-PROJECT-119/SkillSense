@@ -10,6 +10,7 @@ env/
 
 # Environment variables and secrets
 .env
+docs/
 
 # Node.js
 node_modules/
