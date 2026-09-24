@@ -24,8 +24,10 @@ def create_tables() -> None:
     from app.db.models.learning_material import LearningMaterial
     from app.db.models.question import Question, QuestionOption
     from app.db.models.assessment import Assessment, AssessmentQuestion, LearnerResponse
+    from app.db.models.subtopic_performance import SubTopicPerformance
     
     Base.metadata.create_all(bind=engine)
+
 
 
 def get_db():
