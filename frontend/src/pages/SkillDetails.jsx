@@ -316,6 +316,7 @@ import {
   getSubTopicsByTopic,
   getLearningMaterials,
   generateQuestions,
+  deleteAllQuestionsForSkill,
 } from "../services/api";
 
 function SkillDetails() {
@@ -327,6 +328,8 @@ function SkillDetails() {
   const [loading, setLoading] = useState(true);
   const [generatingSubTopicId, setGeneratingSubTopicId] = useState(null);
   const [generationMessages, setGenerationMessages] = useState({});
+  const [deletingQuestions, setDeletingQuestions] = useState(false);
+  const [deleteMessage, setDeleteMessage] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -394,6 +397,33 @@ function SkillDetails() {
 
     loadSkillDetails();
   }, [skillId]);
+
+  async function handleDeleteAllQuestions() {
+    if (
+      !window.confirm(
+        `Are you sure you want to delete all generated questions for ${skill.name}? This will not delete topics, sub-topics, or learning materials.`,
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setDeletingQuestions(true);
+      setDeleteMessage("");
+
+      const result = await deleteAllQuestionsForSkill(skill.id);
+      setDeleteMessage(
+        result.message || "All questions deleted successfully.",
+      );
+    } catch (error) {
+      console.error("Failed to delete questions:", error);
+      setDeleteMessage(
+        error.message || "Failed to delete questions.",
+      );
+    } finally {
+      setDeletingQuestions(false);
+    }
+  }
 
   async function handleGenerateQuestions(subTopicId) {
     try {
@@ -468,8 +498,45 @@ function SkillDetails() {
             {skill.description ||
               "No description available."}
           </p>
+
+          <div style={{ marginTop: "1rem" }}>
+            <button
+              type="button"
+              className="delete-button"
+              disabled={deletingQuestions}
+              onClick={handleDeleteAllQuestions}
+              style={{
+                backgroundColor: "#dc2626",
+                color: "#ffffff",
+                border: "none",
+                padding: "0.6rem 1.2rem",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontWeight: "600",
+                fontSize: "0.9rem",
+              }}
+            >
+              {deletingQuestions
+                ? "Deleting..."
+                : "🗑️ Delete All Questions"}
+            </button>
+
+            {deleteMessage && (
+              <p
+                style={{
+                  marginTop: "0.5rem",
+                  color: "#ef4444",
+                  fontSize: "0.9rem",
+                  fontWeight: "500",
+                }}
+              >
+                {deleteMessage}
+              </p>
+            )}
+          </div>
         </div>
       </section>
+
 
       <section className="learning-overview">
         <p className="eyebrow">

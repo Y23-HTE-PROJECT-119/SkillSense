@@ -40,14 +40,57 @@ def create_skill(skill_data: SkillCreate, db: Session = Depends(get_db),):
 
     return skill
 
-@router.get("",response_model=list[SkillResponse],)
+from app.db.models.topic import Topic
+from app.db.models.subtopic import SubTopic
+from app.db.models.question import Question, QuestionOption
+from app.db.models.assessment import AssessmentQuestion, LearnerResponse
 
-def get_skills(
-    db: Session = Depends(get_db)
+
+@router.delete("/{skill_id}/questions", status_code=status.HTTP_200_OK)
+def delete_all_questions_for_skill(
+    skill_id: int,
+    db: Session = Depends(get_db),
 ):
-    result = db.execute(select(Skill))
-    skills = result.scalars().all()
+    skill = db.execute(
+        select(Skill).where(Skill.id == skill_id)
+    ).scalar_one_or_none()
 
-    return skills
+    if skill is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Skill not found.",
+        )
+
+    topics = db.scalars(select(Topic).where(Topic.skill_id == skill_id)).all()
+    topic_ids = [t.id for t in topics]
+
+    subtopics = db.scalars(select(SubTopic).where(SubTopic.topic_id.in_(topic_ids))).all() if topic_ids else []
+    subtopic_ids = [s.id for s in subtopics]
+
+    if not subtopic_ids:
+        return {"message": f"No questions found for skill '{skill.name}'.", "deleted_count": 0}
+
+    questions = db.scalars(select(Question).where(Question.subtopic_id.in_(subtopic_ids))).all()
+    question_ids = [q.id for q in questions]
+
+    if not question_ids:
+        return {"message": f"No questions found for skill '{skill.name}'.", "deleted_count": 0}
+
+    try:
+        db.query(LearnerResponse).filter(LearnerResponse.question_id.in_(question_ids)).delete(synchronize_session=False)
+        db.query(AssessmentQuestion).filter(AssessmentQuestion.question_id.in_(question_ids)).delete(synchronize_session=False)
+        db.query(QuestionOption).filter(QuestionOption.question_id.in_(question_ids)).delete(synchronize_session=False)
+        deleted_count = db.query(Question).filter(Question.id.in_(question_ids)).delete(synchronize_session=False)
+
+        db.commit()
+
+        return {
+            "message": f"Successfully deleted all {deleted_count} questions for skill '{skill.name}'.",
+            "deleted_count": deleted_count,
+        }
+    except Exception:
+        db.rollback()
+        raise
+
 
 
