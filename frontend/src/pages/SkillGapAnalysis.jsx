@@ -1,44 +1,91 @@
-import { Link, useLocation, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 
-import mockQuestions from "../data/mockQuestions";
-import { diagnoseAssessment } from "../utils/diagnoseAssessment";
+import { getAssessmentDiagnosis } from "../services/api";
 
 function SkillGapAnalysis() {
-  const { skillId } = useParams();
-  const location = useLocation();
-  const result = location.state;
+  const { assessmentId } = useParams();
 
-  if (!result) {
+  const [diagnosis, setDiagnosis] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    async function loadDiagnosis() {
+      try {
+        setLoading(true);
+        setError("");
+
+        const data = await getAssessmentDiagnosis(assessmentId);
+
+        setDiagnosis(data);
+      } catch (error) {
+        console.error("Failed to load assessment diagnosis:", error);
+
+        setError(
+          error.message ||
+            "Unable to load the skill gap analysis.",
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadDiagnosis();
+  }, [assessmentId]);
+
+  if (loading) {
     return (
       <main className="dashboard">
-        <h1>No assessment data found</h1>
+        <p>Analyzing your assessment...</p>
+      </main>
+    );
+  }
 
-        <p>
-          Complete an assessment first so SkillSense can identify your skill
-          gaps.
-        </p>
+  if (error) {
+    return (
+      <main className="dashboard">
+        <h1>Unable to load skill gap analysis</h1>
 
-        <Link to={`/skills/${skillId}`} className="back-link">
-          ← Back to Skill
+        <p>{error}</p>
+
+        <Link to="/" className="back-link">
+          ← Back to Dashboard
         </Link>
       </main>
     );
   }
 
-  const questions = mockQuestions[String(skillId)] ?? [];
+  if (!diagnosis) {
+    return (
+      <main className="dashboard">
+        <h1>No diagnosis found</h1>
 
-  const diagnosis = diagnoseAssessment(
-    questions,
-    result.answers,
+        <Link to="/" className="back-link">
+          ← Back to Dashboard
+        </Link>
+      </main>
+    );
+  }
+
+  const diagnoses = diagnosis.diagnoses ?? [];
+
+  const strongSubtopics = diagnoses.filter(
+    (item) =>
+      item.status?.toLowerCase() === "strong" ||
+      item.status?.toLowerCase() === "mastered",
+  );
+
+  const weakSubtopics = diagnoses.filter(
+    (item) =>
+      item.status?.toLowerCase() === "weak" ||
+      item.status?.toLowerCase() === "needs practice",
   );
 
   return (
     <main className="dashboard gap-analysis-page">
-      <Link
-        to={`/skills/${skillId}/assessment`}
-        className="back-link"
-      >
-        ← Back to Assessment
+      <Link to="/" className="back-link">
+        ← Back to Dashboard
       </Link>
 
       <section className="gap-header">
@@ -47,33 +94,42 @@ function SkillGapAnalysis() {
         <h1>Understand your skill gaps</h1>
 
         <p>
-          SkillSense analyzed your assessment answers to identify the areas
-          where you are strong and the concepts that need more practice.
+          SkillSense analyzed your assessment performance to identify
+          the areas where you are strong and the concepts that need
+          more practice.
         </p>
       </section>
 
       <section className="gap-summary-grid">
         <div className="gap-summary-card">
-          <span className="stat-label">Strong Areas</span>
-          <strong>{diagnosis.strongAreas.length}</strong>
+          <span className="stat-label">Overall Score</span>
+
+          <strong>
+            {Math.round(diagnosis.overall_percentage ?? 0)}%
+          </strong>
+
           <span className="stat-description">
-            Concepts you understand well
+            Overall assessment performance
+          </span>
+        </div>
+
+        <div className="gap-summary-card">
+          <span className="stat-label">Strong Areas</span>
+
+          <strong>{strongSubtopics.length}</strong>
+
+          <span className="stat-description">
+            Sub-topics you understand well
           </span>
         </div>
 
         <div className="gap-summary-card">
           <span className="stat-label">Needs Practice</span>
-          <strong>{diagnosis.practiceAreas.length}</strong>
-          <span className="stat-description">
-            Concepts that need reinforcement
-          </span>
-        </div>
 
-        <div className="gap-summary-card">
-          <span className="stat-label">Weak Areas</span>
-          <strong>{diagnosis.weakAreas.length}</strong>
+          <strong>{weakSubtopics.length}</strong>
+
           <span className="stat-description">
-            Concepts requiring focused learning
+            Sub-topics that need reinforcement
           </span>
         </div>
       </section>
@@ -82,46 +138,74 @@ function SkillGapAnalysis() {
         <div className="section-heading">
           <div>
             <p className="eyebrow">DETAILED ANALYSIS</p>
+
             <h2>Sub-topic Performance</h2>
           </div>
         </div>
 
-        <div className="gap-list">
-          {diagnosis.subTopics.map((item) => (
-            <article
-              className={`gap-card gap-${item.status
+        {diagnoses.length === 0 ? (
+          <p>No sub-topic diagnosis is available yet.</p>
+        ) : (
+          <div className="gap-list">
+            {diagnoses.map((item) => {
+              const accuracy = Math.round(
+                item.accuracy_percentage ?? 0,
+              );
+
+              const statusClass = (item.status || "unknown")
                 .toLowerCase()
-                .replace(" ", "-")}`}
-              key={`${item.topic}-${item.subTopic}`}
-            >
-              <div className="gap-card-header">
-                <div>
-                  <span className="gap-topic">{item.topic}</span>
-                  <h3>{item.subTopic}</h3>
-                </div>
+                .replace(/\s+/g, "-");
 
-                <span className="gap-status">
-                  {item.status}
-                </span>
-              </div>
+              return (
+                <article
+                  className={`gap-card gap-${statusClass}`}
+                  key={item.subtopic_id}
+                >
+                  <div className="gap-card-header">
+                    <div>
+                      <span className="gap-topic">
+                        {item.topic_name}
+                      </span>
 
-              <div className="gap-progress-header">
-                <span>
-                  {item.correct} of {item.total} correct
-                </span>
+                      <h3>{item.subtopic_name}</h3>
+                    </div>
 
-                <strong>{item.accuracy}%</strong>
-              </div>
+                    <span className="gap-status">
+                      {item.status || "Unknown"}
+                    </span>
+                  </div>
 
-              <div className="progress-track">
-                <div
-                  className="progress-bar"
-                  style={{ width: `${item.accuracy}%` }}
-                />
-              </div>
-            </article>
-          ))}
-        </div>
+                  <div className="gap-progress-header">
+                    <span>
+                      {item.correct_answers} of{" "}
+                      {item.total_questions} correct
+                    </span>
+
+                    <strong>{accuracy}%</strong>
+                  </div>
+
+                  <div className="progress-track">
+                    <div
+                      className="progress-bar"
+                      style={{ width: `${accuracy}%` }}
+                    />
+                  </div>
+
+                  {item.severity && (
+                    <p>
+                      <strong>Severity:</strong>{" "}
+                      {item.severity}
+                    </p>
+                  )}
+
+                  {item.evidence_summary && (
+                    <p>{item.evidence_summary}</p>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       <section className="recommendation-section">
@@ -129,27 +213,34 @@ function SkillGapAnalysis() {
 
         <h2>Focus your learning</h2>
 
-        {diagnosis.weakAreas.length > 0 ? (
+        {weakSubtopics.length > 0 ? (
           <>
             <p>
-              Start with the following concepts before taking the assessment
-              again.
+              These sub-topics were identified as areas that need
+              additional practice.
             </p>
 
             <div className="recommendation-list">
-              {diagnosis.weakAreas.map((item) => (
+              {weakSubtopics.map((item) => (
                 <div
                   className="recommendation-card"
-                  key={`${item.topic}-${item.subTopic}`}
+                  key={item.subtopic_id}
                 >
-                  <div className="recommendation-icon">!</div>
+                  <div className="recommendation-icon">
+                    !
+                  </div>
 
                   <div>
-                    <h3>{item.subTopic}</h3>
+                    <h3>{item.subtopic_name}</h3>
 
                     <p>
-                      Review the fundamentals of {item.subTopic} and
-                      practice a few questions before reassessing this area.
+                      Your accuracy in this sub-topic was{" "}
+                      {Math.round(
+                        item.accuracy_percentage ?? 0,
+                      )}
+                      %. Review the concept and practice
+                      additional questions before taking a
+                      targeted re-test.
                     </p>
                   </div>
                 </div>
@@ -158,8 +249,9 @@ function SkillGapAnalysis() {
           </>
         ) : (
           <p>
-            No major weak areas were identified in this assessment. Continue
-            practicing to maintain your current understanding.
+            No major weak areas were identified in this
+            assessment. Continue practicing to maintain your
+            current understanding.
           </p>
         )}
 

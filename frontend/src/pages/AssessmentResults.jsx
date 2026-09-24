@@ -86,12 +86,20 @@ function AssessmentResults() {
             Back to Dashboard
           </Link>
 
-          <Link
+          {/* <Link
             to={`/assessments/${assessmentId}/gaps`}
             className="skill-button"
           >
             View Skill Gaps →
-          </Link>
+          </Link> */}
+
+        <Link
+        to={`/assessments/${assessmentId}/gaps`}
+        className="skill-button"
+      >
+        View Skill Gaps →
+      </Link>
+
         </div>
       </section>
     </main>

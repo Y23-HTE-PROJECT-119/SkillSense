@@ -103,6 +103,12 @@ function App() {
               path="/skills/:skillId/gaps"
               element={<SkillGapAnalysis />}
             />
+
+            <Route
+              path="/assessments/:assessmentId/gaps"
+              element={<SkillGapAnalysis />}
+            />
+
           </Routes>
         </div>
       </div>
