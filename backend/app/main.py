@@ -7,6 +7,7 @@ from app.routes.topics import router as topics_router
 from app.routes.subtopics import router as subtopics_router
 from app.routes.learning_materials import router as learning_materials_router
 from app.routes.questions import router as questions_router
+from app.routes.assessments import router as assessments_router
 
 app = FastAPI(
     title="AI Skill Assessment Platform",
@@ -23,6 +24,8 @@ app.include_router(topics_router)
 app.include_router(subtopics_router)
 app.include_router(learning_materials_router)
 app.include_router(questions_router)
+app.include_router(assessments_router)
+
 
 
 @app.get("/")
