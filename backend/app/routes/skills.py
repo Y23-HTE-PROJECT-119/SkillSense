@@ -5,28 +5,30 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.db.models.skill import Skill
 from app.db.schemas.skill import SkillCreate, SkillResponse
+from app.db.models.topic import Topic
+from app.db.models.subtopic import SubTopic
+from app.db.models.question import Question, QuestionOption
+from app.db.models.assessment import AssessmentQuestion, LearnerResponse
 
 router = APIRouter(
-    prefix = "/skills",
+    prefix="/skills",
     tags=["Skills"],
 )
 
-@router.post("", response_model=SkillResponse, status_code=status.HTTP_201_CREATED,)
 
-def create_skill(skill_data: SkillCreate, db: Session = Depends(get_db),):
+@router.post("", response_model=SkillResponse, status_code=status.HTTP_201_CREATED)
+def create_skill(skill_data: SkillCreate, db: Session = Depends(get_db)):
+    existing_skill = db.execute(
+        select(Skill).where(Skill.name == skill_data.name)
+    ).scalar_one_or_none()
 
-    existing_skill= db.execute(select(Skill).where(Skill.name==skill_data.name)).scalar_one_or_none()
-
-    if(existing_skill):
+    if existing_skill:
         raise HTTPException(
-            status_code = status.HTTP_409_CONFLICT,
-            detail = "A skill with this name already exists.",
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A skill with this name already exists.",
         )
-    
-    skill = Skill(
-     name = skill_data.name,
-     description = skill_data.description   
-    )
+
+    skill = Skill(name=skill_data.name, description=skill_data.description)
 
     try:
         db.add(skill)
@@ -36,14 +38,15 @@ def create_skill(skill_data: SkillCreate, db: Session = Depends(get_db),):
     except Exception:
         db.rollback()
         raise
-    
 
     return skill
 
-from app.db.models.topic import Topic
-from app.db.models.subtopic import SubTopic
-from app.db.models.question import Question, QuestionOption
-from app.db.models.assessment import AssessmentQuestion, LearnerResponse
+
+@router.get("", response_model=list[SkillResponse])
+def get_skills(db: Session = Depends(get_db)):
+    result = db.execute(select(Skill))
+    skills = result.scalars().all()
+    return skills
 
 
 @router.delete("/{skill_id}/questions", status_code=status.HTTP_200_OK)
@@ -91,6 +94,3 @@ def delete_all_questions_for_skill(
     except Exception:
         db.rollback()
         raise
-
-
-
