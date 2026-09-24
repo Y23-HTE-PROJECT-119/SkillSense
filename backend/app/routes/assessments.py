@@ -1,3 +1,4 @@
+import random
 from datetime import datetime
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -66,8 +67,9 @@ def create_assessment_session(
             detail="No questions available for this skill. Please generate questions for subtopics first.",
         )
 
-    # Sample up to 10 questions
-    sampled_questions = questions[:10]
+    # Randomly sample up to 10 questions from the pool
+    sample_count = min(10, len(questions))
+    sampled_questions = random.sample(questions, k=sample_count)
 
     title = data.title or f"{skill.name} Assessment"
     assessment = Assessment(
@@ -90,13 +92,14 @@ def create_assessment_session(
         db.commit()
         db.refresh(assessment)
 
-        # Build secure public questions response (without exposing option.is_correct)
+        # Build secure public questions response (with randomized option choices)
         public_questions = []
         for q in sampled_questions:
             pub_options = [
                 PublicOptionResponse(id=opt.id, option_text=opt.option_text)
                 for opt in q.options
             ]
+            random.shuffle(pub_options)  # Randomize option presentation order
             public_questions.append(
                 PublicQuestionResponse(
                     id=q.id,
@@ -119,6 +122,7 @@ def create_assessment_session(
     except Exception:
         db.rollback()
         raise
+
 
 
 @router.get(
