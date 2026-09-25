@@ -1,315 +1,8 @@
-// import { useEffect, useState } from "react";
-// import { Link, useParams } from "react-router-dom";
-
-// import {
-//   getSkills,
-//   getTopicsBySkill,
-//   getSubTopicsByTopic,
-// } from "../services/api";
-
-
-// function SkillDetails() {
-//   const { skillId } = useParams();
-
-//   const [skill, setSkill] = useState(null);
-//   const [topics, setTopics] = useState([]);
-
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState("");
-
-
-//   useEffect(() => {
-//     async function loadSkillDetails() {
-//       try {
-//         setLoading(true);
-//         setError("");
-
-//         // 1. Get all skills
-//         const skills = await getSkills();
-
-//         // 2. Find the current skill
-//         const foundSkill = skills.find(
-//           (item) =>
-//             String(item.id) === String(skillId),
-//         );
-
-//         if (!foundSkill) {
-//           setError("Skill not found.");
-//           return;
-//         }
-
-//         setSkill(foundSkill);
-
-
-//         // 3. Get topics belonging to this skill
-//         const topicData = await getTopicsBySkill(skillId);
-
-
-//         // 4. Get sub-topics for each topic
-//         const topicsWithSubTopics = await Promise.all(
-//           topicData.map(async (topic) => {
-//             const subTopics =
-//               await getSubTopicsByTopic(topic.id);
-
-//             return {
-//               ...topic,
-//               subTopics,
-//             };
-//           }),
-//         );
-
-
-//         // 5. Store the complete learning structure
-//         setTopics(topicsWithSubTopics);
-
-//       } catch (error) {
-//         console.error(
-//           "Failed to load skill details:",
-//           error,
-//         );
-
-//         setError(
-//           "Unable to load this skill. Please make sure the backend is running.",
-//         );
-//       } finally {
-//         setLoading(false);
-//       }
-//     }
-
-//     loadSkillDetails();
-//   }, [skillId]);
-
-
-//   if (loading) {
-//     return (
-//       <main className="dashboard">
-//         <p>Loading skill...</p>
-//       </main>
-//     );
-//   }
-
-
-//   if (error) {
-//     return (
-//       <main className="dashboard">
-//         <p>{error}</p>
-
-//         <Link
-//           to="/"
-//           className="back-link"
-//         >
-//           ← Back to Dashboard
-//         </Link>
-//       </main>
-//     );
-//   }
-
-
-//   return (
-//     <main className="dashboard skill-details">
-
-//       <Link
-//         to="/"
-//         className="back-link"
-//       >
-//         ← Back to Dashboard
-//       </Link>
-
-
-//       <section className="skill-hero">
-//         <div className="skill-hero-icon">
-//           {skill.name
-//             .charAt(0)
-//             .toUpperCase()}
-//         </div>
-
-//         <div>
-//           <p className="eyebrow">
-//             SKILL
-//           </p>
-
-//           <h1>{skill.name}</h1>
-
-//           <p>
-//             {skill.description ||
-//               "No description available."}
-//           </p>
-//         </div>
-//       </section>
-
-
-//       <section className="learning-overview">
-
-//         <p className="eyebrow">
-//           YOUR LEARNING JOURNEY
-//         </p>
-
-//         <h2>
-//           Topics & Sub-topics
-//         </h2>
-
-//         <p className="section-description">
-//           Explore the concepts that make up
-//           this skill.
-//         </p>
-
-
-//         {topics.length === 0 ? (
-//           <div className="empty-learning-state">
-
-//             <h3>
-//               Learning content coming soon
-//             </h3>
-
-//             <p>
-//               Topics and learning material
-//               have not been configured for
-//               this skill yet.
-//             </p>
-
-//           </div>
-//         ) : (
-
-//           <div className="topics-list">
-
-//             {topics.map(
-//               (topic, index) => (
-
-//                 <article
-//                   className="topic-card"
-//                   key={topic.id}
-//                 >
-
-//                   <div className="topic-number">
-//                     {String(index + 1).padStart(
-//                       2,
-//                       "0",
-//                     )}
-//                   </div>
-
-
-//                   <div className="topic-content">
-
-//                     <h3>
-//                       {topic.name}
-//                     </h3>
-
-
-//                     <p className="topic-description">
-//                       {topic.description ||
-//                         "No description available."}
-//                     </p>
-
-
-//                     <div className="subtopic-list">
-
-//                       {topic.subTopics.length === 0 ? (
-
-//                         <p>
-//                           No sub-topics available.
-//                         </p>
-
-//                       ) : (
-
-//                         topic.subTopics.map(
-//                           (subTopic) => (
-
-//                             <div
-//                               className="subtopic-item"
-//                               key={subTopic.id}
-//                             >
-
-//                               <span className="subtopic-dot">
-//                                 ✓
-//                               </span>
-
-//                               <span>
-//                                 {subTopic.name}
-//                               </span>
-
-//                             </div>
-
-//                           ),
-//                         )
-
-//                       )}
-
-//                     </div>
-
-
-//                     <div className="topic-footer">
-
-//                       <span>
-//                         {topic.subTopics.length}{" "}
-//                         sub-topics
-//                       </span>
-
-
-//                       <button
-//                         className="topic-button"
-//                         disabled
-//                       >
-//                         Start Learning
-//                       </button>
-
-//                     </div>
-
-//                   </div>
-
-//                 </article>
-
-//               ),
-//             )}
-
-//           </div>
-
-//         )}
-
-//       </section>
-
-
-//       <section className="assessment-cta">
-
-//         <div>
-
-//           <p className="eyebrow">
-//             READY TO CHECK YOUR
-//             KNOWLEDGE?
-//           </p>
-
-//           <h2>
-//             Take an Assessment
-//           </h2>
-
-//           <p>
-//             Your assessment will help identify
-//             which sub-topics you already
-//             understand and where you need
-//             more practice.
-//           </p>
-
-//         </div>
-
-
-//         <Link
-//           to={`/skills/${skillId}/assessment`}
-//           className="assessment-button assessment-link"
-//         >
-//           Start Assessment →
-//         </Link>
-
-//       </section>
-
-//     </main>
-//   );
-// }
-
-
-// export default SkillDetails;
-
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
+import AddTopicModal from "../components/AddTopicModal";
+import AddSubTopicModal from "../components/AddSubTopicModal";
 import {
   getSkills,
   getTopicsBySkill,
@@ -330,6 +23,8 @@ function SkillDetails() {
   const [generationMessages, setGenerationMessages] = useState({});
   const [deletingQuestions, setDeletingQuestions] = useState(false);
   const [deleteMessage, setDeleteMessage] = useState("");
+  const [isAddTopicModalOpen, setIsAddTopicModalOpen] = useState(false);
+  const [selectedTopicForSubTopic, setSelectedTopicForSubTopic] = useState(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -356,8 +51,7 @@ function SkillDetails() {
         // 3. Get topics belonging to this skill
         const topicData = await getTopicsBySkill(skillId);
 
-        // 4. Get sub-topics and learning materials
-        //    for each topic
+        // 4. Get sub-topics and learning materials for each topic
         const topicsWithSubTopics = await Promise.all(
           topicData.map(async (topic) => {
             const subTopics = await getSubTopicsByTopic(topic.id);
@@ -384,9 +78,8 @@ function SkillDetails() {
 
         // 5. Store the complete learning structure
         setTopics(topicsWithSubTopics);
-      } catch (error) {
-        console.error("Failed to load skill details:", error);
-
+      } catch (err) {
+        console.error("Failed to load skill details:", err);
         setError(
           "Unable to load this skill. Please make sure the backend is running.",
         );
@@ -397,6 +90,26 @@ function SkillDetails() {
 
     loadSkillDetails();
   }, [skillId]);
+
+  function handleTopicCreated(newTopic) {
+    setTopics((prev) => [...prev, { ...newTopic, subTopics: [] }]);
+  }
+
+  function handleSubTopicCreated(topicId, newSubTopic) {
+    setTopics((prev) =>
+      prev.map((t) =>
+        t.id === topicId
+          ? {
+              ...t,
+              subTopics: [
+                ...t.subTopics,
+                { ...newSubTopic, learningMaterials: [] },
+              ],
+            }
+          : t,
+      ),
+    );
+  }
 
   async function handleDeleteAllQuestions() {
     if (
@@ -415,10 +128,10 @@ function SkillDetails() {
       setDeleteMessage(
         result.message || "All questions deleted successfully.",
       );
-    } catch (error) {
-      console.error("Failed to delete questions:", error);
+    } catch (err) {
+      console.error("Failed to delete questions:", err);
       setDeleteMessage(
-        error.message || "Failed to delete questions.",
+        err.message || "Failed to delete questions.",
       );
     } finally {
       setDeletingQuestions(false);
@@ -438,20 +151,13 @@ function SkillDetails() {
 
       setGenerationMessages((previous) => ({
         ...previous,
-        [subTopicId]:
-          "AI questions generated successfully.",
+        [subTopicId]: "AI questions generated successfully.",
       }));
-    } catch (error) {
-      console.error(
-        "Failed to generate AI questions:",
-        error,
-      );
-
+    } catch (err) {
+      console.error("Failed to generate AI questions:", err);
       setGenerationMessages((previous) => ({
         ...previous,
-        [subTopicId]:
-          error.message ||
-          "Failed to generate AI questions.",
+        [subTopicId]: err.message || "Failed to generate AI questions.",
       }));
     } finally {
       setGeneratingSubTopicId(null);
@@ -470,7 +176,6 @@ function SkillDetails() {
     return (
       <main className="dashboard">
         <p>{error}</p>
-
         <Link to="/" className="back-link">
           ← Back to Dashboard
         </Link>
@@ -494,10 +199,7 @@ function SkillDetails() {
 
           <h1>{skill.name}</h1>
 
-          <p>
-            {skill.description ||
-              "No description available."}
-          </p>
+          <p>{skill.description || "No description available."}</p>
 
           <div style={{ marginTop: "1rem" }}>
             <button
@@ -537,65 +239,86 @@ function SkillDetails() {
         </div>
       </section>
 
-
       <section className="learning-overview">
-        <p className="eyebrow">
-          YOUR LEARNING JOURNEY
-        </p>
+        <div
+          className="section-heading"
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+          }}
+        >
+          <div>
+            <p className="eyebrow">YOUR LEARNING JOURNEY</p>
+            <h2>Topics & Sub-topics</h2>
+            <p className="section-description">
+              Explore and manage the concepts that make up this skill.
+            </p>
+          </div>
 
-        <h2>Topics & Sub-topics</h2>
-
-        <p className="section-description">
-          Explore the concepts that make up this skill.
-        </p>
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={() => setIsAddTopicModalOpen(true)}
+          >
+            + Add Topic
+          </button>
+        </div>
 
         {topics.length === 0 ? (
           <div className="empty-learning-state">
             <h3>Learning content coming soon</h3>
-
             <p>
-              Topics and learning material have not
-              been configured for this skill yet.
+              Topics and learning material have not been configured for this skill yet.
             </p>
           </div>
         ) : (
           <div className="topics-list">
             {topics.map((topic, index) => (
-              <article
-                className="topic-card"
-                key={topic.id}
-              >
+              <article className="topic-card" key={topic.id}>
                 <div className="topic-number">
                   {String(index + 1).padStart(2, "0")}
                 </div>
 
                 <div className="topic-content">
-                  <h3>{topic.name}</h3>
+                  <div
+                    className="topic-header-row"
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <h3>{topic.name}</h3>
+
+                    <button
+                      type="button"
+                      className="secondary-button"
+                      style={{
+                        fontSize: "12px",
+                        padding: "5px 10px",
+                      }}
+                      onClick={() => setSelectedTopicForSubTopic(topic)}
+                    >
+                      + Add Sub-topic
+                    </button>
+                  </div>
 
                   <p className="topic-description">
-                    {topic.description ||
-                      "No description available."}
+                    {topic.description || "No description available."}
                   </p>
 
                   <div className="subtopic-list">
                     {topic.subTopics.length === 0 ? (
                       <p>
-                        No sub-topics available.
+                        No sub-topics available. Click "+ Add Sub-topic" above.
                       </p>
                     ) : (
                       topic.subTopics.map((subTopic) => (
-                        <div
-                          className="subtopic-card"
-                          key={subTopic.id}
-                        >
+                        <div className="subtopic-card" key={subTopic.id}>
                           <div className="subtopic-item">
-                            <span className="subtopic-dot">
-                              ✓
-                            </span>
-
-                            <strong>
-                              {subTopic.name}
-                            </strong>
+                            <span className="subtopic-dot">✓</span>
+                            <strong>{subTopic.name}</strong>
                           </div>
 
                           {subTopic.description && (
@@ -605,62 +328,43 @@ function SkillDetails() {
                           )}
 
                           <div className="learning-materials">
-                            <h4>
-                              Learning Materials
-                            </h4>
+                            <h4>Learning Materials</h4>
 
-                            {subTopic.learningMaterials
-                              ?.length > 0 ? (
+                            {subTopic.learningMaterials?.length > 0 ? (
                               <div>
-                                {subTopic.learningMaterials.map(
-                                  (material) => (
-                                    <div
-                                      className="learning-material-item"
-                                      key={material.id}
-                                    >
-                                      <strong>
-                                        {material.title}
-                                      </strong>
+                                {subTopic.learningMaterials.map((material) => (
+                                  <div
+                                    className="learning-material-item"
+                                    key={material.id}
+                                  >
+                                    <strong>{material.title}</strong>
 
-                                      {material.description && (
-                                        <p>
-                                          {
-                                            material.description
-                                          }
-                                        </p>
-                                      )}
+                                    {material.description && (
+                                      <p>{material.description}</p>
+                                    )}
 
-                                      {material.source_type && (
-                                        <small>
-                                          Type:{" "}
-                                          {
-                                            material.source_type
-                                          }
-                                        </small>
-                                      )}
+                                    {material.source_type && (
+                                      <small>
+                                        Type: {material.source_type}
+                                      </small>
+                                    )}
 
-                                      {material.source_url && (
-                                        <div>
-                                          <a
-                                            href={
-                                              material.source_url
-                                            }
-                                            target="_blank"
-                                            rel="noreferrer"
-                                          >
-                                            Open Learning Material →
-                                          </a>
-                                        </div>
-                                      )}
-                                    </div>
-                                  ),
-                                )}
+                                    {material.source_url && (
+                                      <div>
+                                        <a
+                                          href={material.source_url}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                        >
+                                          Open Learning Material →
+                                        </a>
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
                               </div>
                             ) : (
-                              <p>
-                                No learning materials
-                                available.
-                              </p>
+                              <p>No learning materials available.</p>
                             )}
                           </div>
 
@@ -669,30 +373,20 @@ function SkillDetails() {
                               type="button"
                               className="topic-button"
                               disabled={
-                                generatingSubTopicId ===
-                                subTopic.id
+                                generatingSubTopicId === subTopic.id
                               }
                               onClick={() =>
-                                handleGenerateQuestions(
-                                  subTopic.id,
-                                )
+                                handleGenerateQuestions(subTopic.id)
                               }
                             >
-                              {generatingSubTopicId ===
-                              subTopic.id
+                              {generatingSubTopicId === subTopic.id
                                 ? "Generating..."
                                 : "🤖 Generate AI Questions"}
                             </button>
 
-                            {generationMessages[
-                              subTopic.id
-                            ] && (
+                            {generationMessages[subTopic.id] && (
                               <p className="ai-generation-message">
-                                {
-                                  generationMessages[
-                                    subTopic.id
-                                  ]
-                                }
+                                {generationMessages[subTopic.id]}
                               </p>
                             )}
                           </div>
@@ -702,19 +396,11 @@ function SkillDetails() {
                   </div>
 
                   <div className="topic-footer">
-                    <span>
-                      {topic.subTopics.length}{" "}
-                      sub-topics
-                    </span>
-
+                    <span>{topic.subTopics.length} sub-topics</span>
                     <span>
                       {topic.subTopics.reduce(
                         (total, subTopic) =>
-                          total +
-                          (
-                            subTopic.learningMaterials ||
-                            []
-                          ).length,
+                          total + (subTopic.learningMaterials || []).length,
                         0,
                       )}{" "}
                       learning materials
@@ -729,16 +415,10 @@ function SkillDetails() {
 
       <section className="assessment-cta">
         <div>
-          <p className="eyebrow">
-            READY TO CHECK YOUR KNOWLEDGE?
-          </p>
-
+          <p className="eyebrow">READY TO CHECK YOUR KNOWLEDGE?</p>
           <h2>Take an Assessment</h2>
-
           <p>
-            Your assessment will help identify
-            which sub-topics you already understand
-            and where you need more practice.
+            Your assessment will help identify which sub-topics you already understand and where you need more practice.
           </p>
         </div>
 
@@ -749,6 +429,20 @@ function SkillDetails() {
           Start Assessment →
         </Link>
       </section>
+
+      <AddTopicModal
+        isOpen={isAddTopicModalOpen}
+        onClose={() => setIsAddTopicModalOpen(false)}
+        skillId={skillId}
+        onTopicCreated={handleTopicCreated}
+      />
+
+      <AddSubTopicModal
+        isOpen={Boolean(selectedTopicForSubTopic)}
+        onClose={() => setSelectedTopicForSubTopic(null)}
+        topic={selectedTopicForSubTopic}
+        onSubTopicCreated={handleSubTopicCreated}
+      />
     </main>
   );
 }
