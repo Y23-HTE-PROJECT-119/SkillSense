@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 
 import SkillCard from "../components/SkillCard";
+import AddSkillModal from "../components/AddSkillModal";
 import { getSkills } from "../services/api";
-
 
 function Dashboard() {
   const [skills, setSkills] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   useEffect(() => {
     async function loadSkills() {
@@ -17,11 +17,9 @@ function Dashboard() {
         setError("");
 
         const data = await getSkills();
-
         setSkills(data);
       } catch (error) {
         console.error("Failed to load skills:", error);
-
         setError(
           "Unable to load skills. Please make sure the backend is running.",
         );
@@ -33,100 +31,78 @@ function Dashboard() {
     loadSkills();
   }, []);
 
+  function handleSkillCreated(newSkill) {
+    setSkills((prevSkills) => [...prevSkills, newSkill]);
+  }
 
   return (
     <main className="dashboard">
       <section className="welcome-section">
         <p className="eyebrow">LEARNING DASHBOARD</p>
-
         <h1>Welcome back, Ganesh</h1>
-
-        <p>
-          Continue building your skills and close your knowledge gaps.
-        </p>
+        <p>Continue building your skills and close your knowledge gaps.</p>
       </section>
-
 
       <section className="stats-grid">
         <div className="stat-card">
           <span className="stat-label">Skills</span>
-
           <strong>{skills.length}</strong>
-
-          <span className="stat-description">
-            Currently available
-          </span>
+          <span className="stat-description">Currently available</span>
         </div>
-
 
         <div className="stat-card">
           <span className="stat-label">Assessments</span>
-
           <strong>0</strong>
-
-          <span className="stat-description">
-            Completed
-          </span>
+          <span className="stat-description">Completed</span>
         </div>
-
 
         <div className="stat-card">
           <span className="stat-label">Overall Progress</span>
-
           <strong>—</strong>
-
-          <span className="stat-description">
-            No assessments yet
-          </span>
+          <span className="stat-description">No assessments yet</span>
         </div>
       </section>
-
 
       <section className="skills-section">
         <div className="section-heading">
           <div>
             <p className="eyebrow">YOUR LEARNING</p>
-
             <h2>Your Skills</h2>
           </div>
 
-          <button className="secondary-button">
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={() => setIsAddModalOpen(true)}
+          >
             + Add Skill
           </button>
         </div>
 
+        {loading && <p>Loading skills...</p>}
 
-        {loading && (
-          <p>Loading skills...</p>
-        )}
-
-
-        {!loading && error && (
-          <p>{error}</p>
-        )}
-
+        {!loading && error && <p>{error}</p>}
 
         {!loading && !error && skills.length === 0 && (
-          <p>
-            No skills are available yet.
-          </p>
+          <p>No skills are available yet.</p>
         )}
-
 
         {!loading && !error && skills.length > 0 && (
           <div className="skills-grid">
             {skills.map((skill) => (
-              <SkillCard
-                key={skill.id}
-                skill={skill}
-              />
+              <SkillCard key={skill.id} skill={skill} />
             ))}
           </div>
         )}
       </section>
+
+      <AddSkillModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSkillCreated={handleSkillCreated}
+      />
     </main>
   );
 }
-
 
 export default Dashboard;
