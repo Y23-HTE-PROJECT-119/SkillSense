@@ -273,20 +273,23 @@
 
 
 import { useEffect, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 import {
+  createTargetedRetest,
   getAssessmentDiagnosis,
   getAssessmentRemediation,
 } from "../services/api";
 
 function SkillGapAnalysis() {
   const { assessmentId } = useParams();
+  const navigate = useNavigate();
 
   const [diagnosis, setDiagnosis] = useState(null);
   const [remediation, setRemediation] = useState(null);
 
   const [loading, setLoading] = useState(true);
+  const [retesting, setRetesting] = useState(false);
   const [error, setError] = useState("");
 
   const hasLoaded = useRef(false);
@@ -332,6 +335,51 @@ function SkillGapAnalysis() {
 
     loadSkillGapData();
   }, [assessmentId]);
+
+  async function handleRetest() {
+    try {
+      setRetesting(true);
+      setError("");
+
+      const result =
+        await createTargetedRetest(assessmentId);
+
+      const newAssessmentId =
+        result.retest_assessment?.id;
+
+      if (!newAssessmentId) {
+        throw new Error(
+          "The backend did not return a new retest assessment ID.",
+        );
+      }
+
+      const questions =
+        result.retest_assessment?.questions ?? [];
+
+      if (questions.length === 0) {
+        throw new Error(
+          result.message ||
+            "The targeted re-test was created, but no questions were generated.",
+        );
+      }
+
+      navigate(
+        `/assessments/${newAssessmentId}/retest`,
+      );
+    } catch (error) {
+      console.error(
+        "Failed to create targeted retest:",
+        error,
+      );
+
+      setError(
+        error.message ||
+          "Unable to create the targeted re-test.",
+      );
+    } finally {
+      setRetesting(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -404,7 +452,9 @@ function SkillGapAnalysis() {
 
       <section className="gap-summary-grid">
         <div className="gap-summary-card">
-          <span className="stat-label">Overall Score</span>
+          <span className="stat-label">
+            Overall Score
+          </span>
 
           <strong>
             {Math.round(
@@ -419,7 +469,9 @@ function SkillGapAnalysis() {
         </div>
 
         <div className="gap-summary-card">
-          <span className="stat-label">Strong Areas</span>
+          <span className="stat-label">
+            Strong Areas
+          </span>
 
           <strong>{strongSubtopics.length}</strong>
 
@@ -429,7 +481,9 @@ function SkillGapAnalysis() {
         </div>
 
         <div className="gap-summary-card">
-          <span className="stat-label">Needs Practice</span>
+          <span className="stat-label">
+            Needs Practice
+          </span>
 
           <strong>{weakSubtopics.length}</strong>
 
@@ -442,14 +496,18 @@ function SkillGapAnalysis() {
       <section className="gap-section">
         <div className="section-heading">
           <div>
-            <p className="eyebrow">DETAILED ANALYSIS</p>
+            <p className="eyebrow">
+              DETAILED ANALYSIS
+            </p>
 
             <h2>Sub-topic Performance</h2>
           </div>
         </div>
 
         {diagnoses.length === 0 ? (
-          <p>No sub-topic diagnosis is available yet.</p>
+          <p>
+            No sub-topic diagnosis is available yet.
+          </p>
         ) : (
           <div className="gap-list">
             {diagnoses.map((item) => {
@@ -526,8 +584,8 @@ function SkillGapAnalysis() {
 
         {explanations.length === 0 ? (
           <p>
-            No personalized remediation is available for this
-            assessment yet.
+            No personalized remediation is available for
+            this assessment yet.
           </p>
         ) : (
           <div className="recommendation-list">
@@ -567,7 +625,9 @@ function SkillGapAnalysis() {
                     <>
                       <h4>Correct Concept</h4>
 
-                      <p>{item.correct_concept}</p>
+                      <p>
+                        {item.correct_concept}
+                      </p>
                     </>
                   )}
 
@@ -622,9 +682,12 @@ function SkillGapAnalysis() {
 
           <button
             className="skill-button"
-            disabled
+            onClick={handleRetest}
+            disabled={retesting}
           >
-            Take Targeted Re-test
+            {retesting
+              ? "Creating Re-test..."
+              : "Take Targeted Re-test"}
           </button>
         </div>
       </section>
