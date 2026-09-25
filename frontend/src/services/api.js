@@ -92,6 +92,12 @@ export async function createSkill(skill) {
   });
 }
 
+export async function deleteSkill(skillId) {
+  return apiRequest(`/skills/${skillId}`, {
+    method: "DELETE",
+  });
+}
+
 export async function deleteAllQuestionsForSkill(skillId) {
   return apiRequest(`/skills/${skillId}/questions`, {
     method: "DELETE",

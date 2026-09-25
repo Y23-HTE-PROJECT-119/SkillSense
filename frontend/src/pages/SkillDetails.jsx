@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 import AddTopicModal from "../components/AddTopicModal";
 import AddSubTopicModal from "../components/AddSubTopicModal";
@@ -10,10 +10,12 @@ import {
   getLearningMaterials,
   generateQuestions,
   deleteAllQuestionsForSkill,
+  deleteSkill,
 } from "../services/api";
 
 function SkillDetails() {
   const { skillId } = useParams();
+  const navigate = useNavigate();
 
   const [skill, setSkill] = useState(null);
   const [topics, setTopics] = useState([]);
@@ -22,6 +24,7 @@ function SkillDetails() {
   const [generatingSubTopicId, setGeneratingSubTopicId] = useState(null);
   const [generationMessages, setGenerationMessages] = useState({});
   const [deletingQuestions, setDeletingQuestions] = useState(false);
+  const [deletingSkill, setDeletingSkill] = useState(false);
   const [deleteMessage, setDeleteMessage] = useState("");
   const [isAddTopicModalOpen, setIsAddTopicModalOpen] = useState(false);
   const [selectedTopicForSubTopic, setSelectedTopicForSubTopic] = useState(null);
@@ -109,6 +112,27 @@ function SkillDetails() {
           : t,
       ),
     );
+  }
+
+  async function handleDeleteSkill() {
+    if (
+      !window.confirm(
+        `Are you sure you want to delete the skill "${skill.name}"? This will permanently delete all topics, sub-topics, learning materials, questions, and assessment records under this skill.`,
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setDeletingSkill(true);
+      setDeleteMessage("");
+      await deleteSkill(skill.id);
+      navigate("/");
+    } catch (err) {
+      console.error("Failed to delete skill:", err);
+      setDeleteMessage(err.message || "Failed to delete skill.");
+      setDeletingSkill(false);
+    }
   }
 
   async function handleDeleteAllQuestions() {
@@ -201,7 +225,26 @@ function SkillDetails() {
 
           <p>{skill.description || "No description available."}</p>
 
-          <div style={{ marginTop: "1rem" }}>
+          <div style={{ marginTop: "1rem", display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+            <button
+              type="button"
+              className="delete-button"
+              disabled={deletingSkill}
+              onClick={handleDeleteSkill}
+              style={{
+                backgroundColor: "#b91c1c",
+                color: "#ffffff",
+                border: "none",
+                padding: "0.6rem 1.2rem",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontWeight: "600",
+                fontSize: "0.9rem",
+              }}
+            >
+              {deletingSkill ? "Deleting Skill..." : "❌ Delete Skill"}
+            </button>
+
             <button
               type="button"
               className="delete-button"
