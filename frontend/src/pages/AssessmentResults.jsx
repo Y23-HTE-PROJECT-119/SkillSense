@@ -1,4 +1,5 @@
 import { Link, useLocation, useParams } from "react-router-dom";
+import "./AssessmentResults.css";
 
 function AssessmentResults() {
   const location = useLocation();

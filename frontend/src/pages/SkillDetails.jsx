@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import AddTopicModal from "../components/AddTopicModal";
 import AddSubTopicModal from "../components/AddSubTopicModal";
+import "./SkillDetails.css";
 import {
   getSkills,
   getTopicsBySkill,

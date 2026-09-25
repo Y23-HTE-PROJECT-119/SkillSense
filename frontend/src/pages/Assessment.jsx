@@ -576,6 +576,7 @@
 // export default Assessment;
 
 import { useEffect, useState } from "react";
+import "./Assessment.css";
 import {
   Link,
   useNavigate,
